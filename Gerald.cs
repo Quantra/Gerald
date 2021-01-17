@@ -31,15 +31,17 @@ namespace Gerald
 		public Gerald([Import("ModuleParameters")] ModuleParameters moduleParameters) : base(moduleParameters) { }
 
 		private SettingEntry<int> _settingCursorThickness;
+		private SettingEntry<int> _settingSkipUpdates;
 
 		protected override void DefineSettings(SettingCollection settings)
 		{
 			_settingCursorThickness = settings.DefineSetting("CursorThickness", 3, "Cursor Thickness");
-            _settingCursorThickness.SetRange(1, 20);  // This doesn't seem to work?
-
+            _settingCursorThickness.SetRange(2, 10);
             _settingCursorThickness.SettingChanged += UpdateCursorThickness;
 
-        }
+			_settingSkipUpdates = settings.DefineSetting("SkipUpdates", 10, "Stabilisation", "Higher settings help prevent the cursor from jumping when releasing RMB but may cause a stutter instead.");
+			_settingSkipUpdates.SetRange(0, 20);
+		}
 
 		private Texture2D dummyTexture;
 		private Cursor lineH;
@@ -128,7 +130,7 @@ namespace Gerald
 		private void DisableCursorUpdates(object sender, MouseEventArgs e)
         {
 			updateCursor = false;
-			skipUpdates = 20;  // Min value of 3 seems to work. Higher = more stutter but less jumps.
+			skipUpdates = _settingSkipUpdates.Value;
 		}
 
 		private void EnableCursorUpdates(object sender, MouseEventArgs e)
