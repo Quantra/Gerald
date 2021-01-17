@@ -35,19 +35,17 @@ namespace Gerald
 		protected override void DefineSettings(SettingCollection settings)
 		{
 			_settingCursorThickness = settings.DefineSetting("CursorThickness", 3, "Cursor Thickness");
-            //_settingCursorThickness.SetRange(1, 20);
+            _settingCursorThickness.SetRange(1, 20);  // This doesn't seem to work?
 
-			_settingCursorThickness.SettingChanged += UpdateCursorThickness;
+            _settingCursorThickness.SettingChanged += UpdateCursorThickness;
 
         }
 
 		private Texture2D dummyTexture;
-		private Image lineH;
-		private Image lineV;
+		private Cursor lineH;
+		private Cursor lineV;
 		private bool updateCursor = true;
-		private int skipUpdate = 0;
-		private Point lastMouseLoc;
-		private int useLastLoc = 0;
+		private int skipUpdates = 0;
 
 		protected override void Initialize()
 		{
@@ -72,23 +70,12 @@ namespace Gerald
 				Opacity = 1.0f
 			};
 
-			//Input.Mouse.MouseMoved += UpdateCursorPosition;
-
-			// Preventing updates whilst left button is pressed works well
-			Input.Mouse.LeftMouseButtonPressed += DisableCursorUpdates;
+            Input.Mouse.LeftMouseButtonPressed += DisableCursorUpdates;
 			Input.Mouse.LeftMouseButtonReleased += EnableCursorUpdates;
-			// Preventing updates whilst right button is pressed doesnt stop the cursor jumping when it is released
-			//Input.Mouse.RightMouseButtonPressed += DisableCursorUpdates;
-			//Input.Mouse.RightMouseButtonReleased += EnableCursorUpdates;
 
-			// Perhaps a solution to stop the cursor jumping is to store the mouseLoc on RightMouseButtonPressed and use this
-			// instead of Mouse.Position immediately after RightMouseButtonReleased?  Nope.
-
-			// Try logging mouse pos and see what is going on.  Perhaps using update method instead of mousemoved helps this?
-			// Ask on discord too.
-
-			lastMouseLoc = Input.Mouse.Position;
-		}
+            Input.Mouse.RightMouseButtonPressed += DisableCursorUpdates;
+            Input.Mouse.RightMouseButtonReleased += EnableCursorUpdates;
+        }
 
 		protected override async Task LoadAsync()
 		{
@@ -104,7 +91,7 @@ namespace Gerald
 
 		protected override void Update(GameTime gameTime)
 		{
-			UpdateCursorPosition();
+            UpdateCursorPosition();
         }
 
 		/// <inheritdoc />
@@ -115,27 +102,20 @@ namespace Gerald
 			// All static members must be manually unset
 		}
 
-		//private void UpdateCursorPosition(object sender, MouseEventArgs e)
-		private void UpdateCursorPosition()
-		{
-			if (!updateCursor) { return; }
 
-			//Point mouseLoc = Input.Mouse.Position;
-			Point mouseLoc = Blish_HUD.InputService.Input.Mouse.Position;
-			
-			//double moveDistance = PointDistance(lastMouseLoc, mouseLoc);
-			//lastMouseLoc = mouseLoc;
+        private void UpdateCursorPosition()
+        {
+			if (!updateCursor || Input.Mouse.MouseHidden) { return; }
 
-			// I am not sure if this actually helps stop the cursor jumping around when the right mouse button is released
-			//if (moveDistance > 10d) { return; }
+			if (skipUpdates > 0)
+			{
+				skipUpdates -= 1;
+				return;
+			}
 
-			//if (useLastLoc > 0)
-   //         {
-			//	mouseLoc = lastMouseLoc;
-			//	useLastLoc -= 1;
-   //         }
+			Point mouseLoc = Input.Mouse.Position;
 
-			lineH.Location = new Point(lineH.Location.X, mouseLoc.Y - _settingCursorThickness.Value / 2);
+            lineH.Location = new Point(lineH.Location.X, mouseLoc.Y - _settingCursorThickness.Value / 2);
 			lineV.Location = new Point(mouseLoc.X - _settingCursorThickness.Value / 2, lineV.Location.Y);
 		}
 
@@ -148,19 +128,12 @@ namespace Gerald
 		private void DisableCursorUpdates(object sender, MouseEventArgs e)
         {
 			updateCursor = false;
-			lastMouseLoc = Input.Mouse.Position;
-			useLastLoc = 50;
+			skipUpdates = 20;  // Min value of 3 seems to work. Higher = more stutter but less jumps.
 		}
 
 		private void EnableCursorUpdates(object sender, MouseEventArgs e)
         {
 			updateCursor = true;
-        }
-
-		private double PointDistance(Point pointA, Point pointB)
-        {
-			Point dif = pointA - pointB;
-			return Math.Sqrt(dif.X^2 + dif.Y^2);
         }
 
 	}

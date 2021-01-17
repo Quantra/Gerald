@@ -73,10 +73,8 @@
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Blish HUD, Version=0.5.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\BlishHUD.0.5.2-alpha.648\lib\net472\Blish HUD.exe</HintPath>
-      <SpecificVersion>False</SpecificVersion>
-      <Private>False</Private>
+    <Reference Include="Blish_HUD">
+      <HintPath>..\..\..\Desktop\Blish HUD Mouse Fix\Blish_HUD.exe</HintPath>
     </Reference>
     <Reference Include="Gw2Sharp, Version=0.10.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\Gw2Sharp.0.10.0\lib\netstandard2.0\Gw2Sharp.dll</HintPath>
